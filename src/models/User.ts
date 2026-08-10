@@ -6,6 +6,7 @@ export interface IUser extends Document {
   name: string;
   age: number;
   gender: 'Male' | 'Female' | 'Other';
+  filterGender?: 'Male' | 'Female' | 'Other' | 'All';
   country: string;
   isAdult: boolean;
   likes: number;
@@ -27,6 +28,7 @@ const UserSchema = new Schema<IUser>({
   name: { type: String, required: true, trim: true, maxlength: 50 },
   age: { type: Number, required: true, min: 18 },
   gender: { type: String, enum: ['Male', 'Female', 'Other'], required: true, index: true },
+  filterGender: { type: String, enum: ['Male', 'Female', 'Other', 'All'], default: 'All' },
   country: { type: String, required: true },
   isAdult: { type: Boolean, required: true, default: true },
   likes: { type: Number, default: 0 },
