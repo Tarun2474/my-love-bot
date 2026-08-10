@@ -82,7 +82,7 @@ bot.on('text', async (ctx, next) => {
 });
 
 // Callback Queries (Inline Buttons Handlers)
-bot.action(/^(btn_start|btn_about|gen_|age_|btn_save_profile)/, handleRegistrationCallbacks);
+bot.action(/^(btn_start$|btn_about|gen_|age_|btn_save_profile)/, handleRegistrationCallbacks);
 bot.action(/^(edit_profile_start|edit_gen_)/, handleEditProfileCallbacks);
 bot.action(/^btn_announcement$/, handleAnnouncementCommand);
 bot.action(/^btn_privacy$/, handlePrivacyCommand);
