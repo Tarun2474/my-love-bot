@@ -88,7 +88,7 @@ bot.action(/^btn_announcement$/, handleAnnouncementCommand);
 bot.action(/^btn_privacy$/, handlePrivacyCommand);
 bot.action(/^(del_)/, handleDeleteCallbacks);
 bot.action(/^(filt_)/, handleFilterCallbacks);
-bot.action(/^(btn_start_complaint|proof_upload|proof_none)$/, handleComplaintCallbacks);
+bot.action(/^(btn_start_complaint|proof_upload|proof_none|submit_complaint)$/, handleComplaintCallbacks);
 bot.action(/^(rate_|btn_new_love)/, async (ctx) => {
   if (ctx.callbackQuery && 'data' in ctx.callbackQuery && ctx.callbackQuery.data === 'btn_new_love') {
     await ctx.answerCbQuery();
