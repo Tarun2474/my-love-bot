@@ -3,7 +3,6 @@ import { Schema, model, Document } from 'mongoose';
 export interface IComplaint extends Document {
   userId: number;
   username?: string;
-  myUserIdInput?: string;
   reportedUserId?: string;
   issueDescription: string;
   hasProof: boolean;
@@ -12,37 +11,12 @@ export interface IComplaint extends Document {
 }
 
 const complaintSchema = new Schema<IComplaint>({
-  userId: {
-    type: Number,
-    required: true
-  },
-
-  username: {
-    type: String
-  },
-
-  myUserIdInput: {
-    type: String
-  },
-
-  reportedUserId: {
-    type: String
-  },
-
-  issueDescription: {
-    type: String,
-    required: true
-  },
-
-  hasProof: {
-    type: Boolean,
-    default: false
-  },
-
-  proofFileId: {
-    type: String
-  },
-
+  userId: { type: Number, required: true },
+  username: { type: String },
+  reportedUserId: { type: String },
+  issueDescription: { type: String, required: true },
+  hasProof: { type: Boolean, default: false },
+  proofFileId: { type: String },
   createdAt: {
     type: Date,
     default: Date.now,
@@ -50,7 +24,4 @@ const complaintSchema = new Schema<IComplaint>({
   }
 });
 
-export const Complaint = model<IComplaint>(
-  'Complaint',
-  complaintSchema
-);
+export const Complaint = model<IComplaint>('Complaint', complaintSchema);
