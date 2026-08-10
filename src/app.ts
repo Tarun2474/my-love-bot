@@ -86,7 +86,6 @@ bot.action(/^(btn_start|btn_about|gen_|age_|btn_save_profile)/, handleRegistrati
 bot.action(/^(edit_profile_start|edit_gen_)/, handleEditProfileCallbacks);
 bot.action(/^btn_announcement$/, handleAnnouncementCommand);
 bot.action(/^btn_privacy$/, handlePrivacyCommand);
-bot.action(/^btn_start_complaint$/, handleComplaintCallbacks);
 bot.action(/^(del_)/, handleDeleteCallbacks);
 bot.action(/^(filt_)/, handleFilterCallbacks);
 bot.action(/^(btn_start_complaint|proof_upload|proof_none)$/, handleComplaintCallbacks);
