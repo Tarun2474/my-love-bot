@@ -3,17 +3,11 @@ import { Schema, model, Document } from 'mongoose';
 export interface IComplaint extends Document {
   userId: number;
   username?: string;
-
-  myUserIdInput: string;
-  reportedUserId: string;
-
-  complaintType: string;
+  myUserIdInput?: string;
+  reportedUserId?: string;
   issueDescription: string;
-
   hasProof: boolean;
   proofFileId?: string;
-  proofType?: 'photo' | 'document';
-
   createdAt: Date;
 }
 
@@ -28,18 +22,11 @@ const complaintSchema = new Schema<IComplaint>({
   },
 
   myUserIdInput: {
-    type: String,
-    required: true
+    type: String
   },
 
   reportedUserId: {
-    type: String,
-    required: true
-  },
-
-  complaintType: {
-    type: String,
-    required: true
+    type: String
   },
 
   issueDescription: {
@@ -56,11 +43,6 @@ const complaintSchema = new Schema<IComplaint>({
     type: String
   },
 
-  proofType: {
-    type: String,
-    enum: ['photo', 'document']
-  },
-
   createdAt: {
     type: Date,
     default: Date.now,
@@ -68,4 +50,7 @@ const complaintSchema = new Schema<IComplaint>({
   }
 });
 
-export const Complaint = model<IComplaint>('Complaint', complaintSchema);
+export const Complaint = model<IComplaint>(
+  'Complaint',
+  complaintSchema
+);
