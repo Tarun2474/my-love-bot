@@ -17,7 +17,7 @@ export const handlePrivacyCommand = async (ctx: Context) => {
 
 export const handleContactCommand = async (ctx: Context) => {
   const keyboard = Markup.inlineKeyboard([
-    [Markup.button.callback('Complaint', 'complaint_start')]
+    [Markup.button.callback('Complaint', 'btn_start_complaint')]
   ]);
 
   await ctx.reply('📞 **Support & Complaints**\n\nFacing any issue, bug, or want to report a user? Click the button below to submit a complaint securely:', keyboard);
