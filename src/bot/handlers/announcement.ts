@@ -17,10 +17,10 @@ export const handlePrivacyCommand = async (ctx: Context) => {
 
 export const handleContactCommand = async (ctx: Context) => {
   const keyboard = Markup.inlineKeyboard([
-    [Markup.button.url('Open Complaint Bot', 'https://t.me/complaint_mylove_bot')]
+    [Markup.button.callback('Complaint', 'complaint_start')]
   ]);
 
-  await ctx.reply('📞 **Contact Us & Support**\n\nFacing any issue, bug, or want to report a user? Click the button below to open our official complaint bot:', keyboard);
+  await ctx.reply('📞 **Support & Complaints**\n\nFacing any issue, bug, or want to report a user? Click the button below to submit a complaint securely:', keyboard);
 };
 
 export const handleCopyrightCommand = async (ctx: Context) => {
