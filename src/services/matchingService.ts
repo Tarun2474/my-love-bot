@@ -15,7 +15,7 @@ export class MatchingService {
       };
 
       // Handle gender filtering
-      if (user.filterGender && user.filterGender !== 'ALL') {
+      if (user.filterGender && user.filterGender !== 'All') {
         query.gender = user.filterGender;
       } else {
         // Default preference logic
