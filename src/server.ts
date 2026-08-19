@@ -3,6 +3,7 @@ dotenv.config();
 
 import { connectDB } from './config/database';
 import { app, bot } from './app';
+import http from 'http';
 
 const PORT = Number(process.env.PORT) || 3000;
 const RENDER_URL = process.env.RENDER_EXTERNAL_URL;
@@ -56,6 +57,15 @@ const startServer = async () => {
     console.error('Failed to start server:', error);
     process.exit(1);
   }
+  const RENDER_URL = process.env.RENDER_EXTERNAL_URL || 'https://my-love-bot.onrender.com'; // Yahan apna Render wala live URL daal dena
+
+setInterval(() => {
+  http.get(RENDER_URL, (res) => {
+    console.log(Self-ping keep-alive status: ${res.statusCode});
+  }).on('error', (err) => {
+    console.error('Self-ping error:', err.message);
+  });
+}, 10 * 60 * 1000); // Har 10 minute mein khud ko ping karega
 };
 
 startServer();
