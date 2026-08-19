@@ -3,7 +3,7 @@ import { Announcement } from '../../models/Announcement';
 import { User } from '../../models/User';
 
 // Yahan apni asli Telegram numeric ID daal dena (jaise '123456789')
-const ADMIN_ID = 'YOUR_TELEGRAM_USER_ID';
+const ADMIN_ID = '5620505195';
 
 export const handleAnnouncementCommand = async (ctx: Context) => {
   const userId = ctx.from?.id.toString();
