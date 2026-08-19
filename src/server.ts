@@ -1,13 +1,10 @@
 import dotenv from 'dotenv';
 import { connectDB } from './config/database';
 import { app, bot } from './app';
-import http from 'http';
 
 dotenv.config();
 
 const PORT = Number(process.env.PORT) || 3000;
-
-// Yeh hai tumhara Render ka exact live URL jo logs mein aaya tha
 const RENDER_URL = 'https://my-love-bot-is9e.onrender.com';
 
 // Telegram webhook route
@@ -51,19 +48,10 @@ const startServer = async () => {
       process.exit(0);
     });
 
-  } catch (error) {
+  } code (error) {
     console.error('Failed to start server:', error);
     process.exit(1);
   }
 };
 
 startServer();
-
-// Self-pinging code taaki bot 24/7 active rahe (Har 10 minute mein khud ko ping karega)
-setInterval(() => {
-  http.get(RENDER_URL, (res) => {
-    console.log(`Self-ping keep-alive status: ${res.statusCode}`);
-  }).on('error', (err) => {
-    console.error('Self-ping error:', err.message);
-  });
-}, 10 * 60 * 1000);
