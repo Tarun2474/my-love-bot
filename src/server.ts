@@ -16,7 +16,10 @@ const startServer = async () => {
       console.log(`Server is running on port ${PORT} 🚀`);
     });
 
-    // Start Telegram Bot using Polling with dropPendingUpdates to prevent conflicts
+    // 1. Purana webhook delete karo taaki conflict na aaye
+    await bot.telegram.deleteWebhook();
+
+    // 2. Start Telegram Bot using Polling
     await bot.launch({
       dropPendingUpdates: true
     });
