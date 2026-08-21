@@ -16,8 +16,10 @@ const startServer = async () => {
       console.log(`Server is running on port ${PORT} 🚀`);
     });
 
-    // Start Telegram Bot using Polling (No webhook needed!)
-    await bot.launch();
+    // Start Telegram Bot using Polling with dropPendingUpdates to prevent conflicts
+    await bot.launch({
+      dropPendingUpdates: true
+    });
     console.log('Telegram Bot successfully launched in Polling mode 🤖❤️');
 
   } catch (error) {
