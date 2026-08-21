@@ -13,6 +13,7 @@ export interface IUser extends Document {
   dislikes: number;
   level: number;
   totalChatSeconds: number;
+  isBlocked: boolean; // <-- Interface mein yahan add kar diya hai
   status: 'NEW' | 'REGISTERING' | 'ACTIVE' | 'SEARCHING' | 'CHATTING' | 'RATING' | 'INACTIVE' | 'DELETED';
   isSearching: boolean;
   partnerId?: number;
@@ -35,10 +36,10 @@ const UserSchema = new Schema<IUser>({
   dislikes: { type: Number, default: 0 },
   level: { type: Number, default: 1 },
   totalChatSeconds: { type: Number, default: 0 },
+  isBlocked: { type: Boolean, default: false },
   status: { type: String, enum: ['NEW', 'REGISTERING', 'ACTIVE', 'SEARCHING', 'CHATTING', 'RATING', 'INACTIVE', 'DELETED'], default: 'NEW', index: true },
   isSearching: { type: Boolean, default: false, index: true },
   partnerId: { type: Number },
-  isBlocked: { type: Boolean, default: false },
   activeMatchId: { type: String },
   lastActiveAt: { type: Date, default: Date.now, index: true },
 }, { timestamps: true });
