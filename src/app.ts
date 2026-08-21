@@ -5,8 +5,9 @@ import { handleStart, handleRegistrationCallbacks, handleRegistrationText } from
 import { handleProfileCommand, handleEditProfileCallbacks, handleEditProfileText, handleDeleteAccount, handleDeleteCallbacks } from './bot/handlers/profile';
 import { handleNewLove, handleFilterCommand, handleFilterCallbacks } from './bot/handlers/matching';
 import { handleEndChat, handleRatingCallbacks, handleMessageRelay } from './bot/handlers/chat';
-import { handleAnnouncementCommand, handlePrivacyCommand, handleContactCommand, handleCopyrightCommand } from './bot/handlers/announcement';
+import { handleAnnouncementCommand, handlePrivacyCommand, handleContactCommand, handleCopyrightCommand, handleDeleteAnnouncementCommand } from './bot/handlers/announcement';
 import { handleComplaintStart, handleComplaintCallbacks, handleComplaintText, handleComplaintPhoto } from './bot/handlers/complaintBot';
+import { handleAdminCommand, handleAdminSearch, handleAdminActions } from './bot/handlers/admin';
 
 const botToken = process.env.BOT_TOKEN;
 if (!botToken) {
@@ -18,7 +19,7 @@ export const app = express();
 
 app.use(express.json());
 
-// Set Telegram Bot Commands Menu automatically
+// Set Telegram Bot Commands Menu automatically (Admin command is kept hidden)
 bot.telegram.setMyCommands([
   { command: 'start', description: 'Start My Love Bot' },
   { command: 'new', description: 'Find a new random love' },
@@ -42,13 +43,31 @@ bot.command('myprofile', handleProfileCommand);
 bot.command('editprofile', handleProfileCommand);
 bot.command('edit_profile', handleProfileCommand);
 bot.command('announcement', handleAnnouncementCommand);
+bot.command('deleteannouncement', handleDeleteAnnouncementCommand);
 bot.command('complaint', handleComplaintStart);
 bot.command('privacy', handlePrivacyCommand);
 bot.command('contact', handleContactCommand);
 bot.command('deleteaccount', handleDeleteAccount);
 
+// Private Admin Commands (Hidden from public menu)
+bot.command('admin', handleAdminCommand);
+bot.command('search', handleAdminSearch);
+
 // Text & Form Handlers Middleware
 bot.on('text', async (ctx, next) => {
+  const userId = ctx.from?.id.toString();
+  
+  // Blocked user check (Blocked users can only use /complaint or /start for appeal)
+  if (userId) {
+    const user = await User.findOne({ telegramUserId: userId });
+    if (user && user.isBlocked) {
+      const text = ctx.message?.text || '';
+      if (!text.startsWith('/complaint') && !text.startsWith('/start')) {
+        return ctx.reply('🚫 **Access Denied:** You are blocked from using this bot. If you believe this is a mistake, please use `/complaint` to submit your proof and appeal.', { parse_mode: 'Markdown' });
+      }
+    }
+  }
+
   // 1. Check if user is filling complaint form
   const complaintHandled = await handleComplaintText(ctx);
   if (complaintHandled) return;
@@ -89,6 +108,10 @@ bot.action(/^btn_privacy$/, handlePrivacyCommand);
 bot.action(/^(del_)/, handleDeleteCallbacks);
 bot.action(/^(filt_)/, handleFilterCallbacks);
 bot.action(/^(btn_start_complaint|proof_upload|proof_none|submit_complaint)$/, handleComplaintCallbacks);
+
+// Admin Action Buttons (Block / Unblock callbacks)
+bot.action(/^adm_/, handleAdminActions);
+
 bot.action(/^(rate_|btn_new_love)/, async (ctx) => {
   if (ctx.callbackQuery && 'data' in ctx.callbackQuery && ctx.callbackQuery.data === 'btn_new_love') {
     await ctx.answerCbQuery();
