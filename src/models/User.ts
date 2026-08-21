@@ -38,6 +38,7 @@ const UserSchema = new Schema<IUser>({
   status: { type: String, enum: ['NEW', 'REGISTERING', 'ACTIVE', 'SEARCHING', 'CHATTING', 'RATING', 'INACTIVE', 'DELETED'], default: 'NEW', index: true },
   isSearching: { type: Boolean, default: false, index: true },
   partnerId: { type: Number },
+  isBlocked: { type: Boolean, default: false },
   activeMatchId: { type: String },
   lastActiveAt: { type: Date, default: Date.now, index: true },
 }, { timestamps: true });
