@@ -11,38 +11,34 @@ const startServer = async () => {
     // Connect MongoDB
     await connectDB();
 
-    // Start Express Server (Render ke liye zaroori hai ki port bind ho)
+    // Start Express Server
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT} 🚀`);
     });
 
-    // Safely launch bot with retry mechanism to prevent conflict errors during deployments
-    const launchBotWithRetry = async (retries = 5, delay = 5000) => {
-      for (let i = 0; i < retries; i++) {
-        try {
-          // Purana webhook delete karo taaki conflict na aaye
-          await bot.telegram.deleteWebhook();
-          
-          // Start Telegram Bot using Polling
-          await bot.launch({
-            dropPendingUpdates: true
-          });
-          
-          console.log('Telegram Bot successfully launched in Polling mode 🤖❤️');
-          return;
-        } catch (err: any) {
-          console.log(`Attempt ${i + 1} failed: ${err.message}. Retrying in ${delay / 1000} seconds...`);
-          if (i === retries - 1) throw err;
-          await new Promise((resolve) => setTimeout(resolve, delay));
-        }
-      }
-    };
+    // Delete any existing webhook and handle launch safely
+    try {
+      await bot.telegram.deleteWebhook({ drop_pending_updates: true });
+    } catch (e) {
+      console.log('Webhook clear notice:', e);
+    }
 
-    await launchBotWithRetry();
+    // Start Bot with safe error handling
+    await bot.launch({
+      dropPendingUpdates: true
+    });
+    
+    console.log('Telegram Bot successfully launched in Polling mode 🤖❤️');
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to start server or bot:', error);
-    process.exit(1);
+    // Agar conflict error aaye toh 5 second baad process restart ho jayega
+    if (error?.description?.includes('Conflict')) {
+      console.log('Conflict detected. Restarting process in 5 seconds...');
+      setTimeout(() => process.exit(1), 5000);
+    } else {
+      process.exit(1);
+    }
   }
 };
 
