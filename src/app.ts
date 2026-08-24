@@ -49,9 +49,11 @@ bot.command('privacy', handlePrivacyCommand);
 bot.command('contact', handleContactCommand);
 bot.command('deleteaccount', handleDeleteAccount);
 
+
 // Private Admin Commands (Hidden from public menu)
 bot.command('admin', handleAdminCommand);
 bot.command('search', handleAdminSearch);
+bot.command('broadcast', handleBroadcastCommand);
 
 // Text & Form Handlers Middleware
 bot.on('text', async (ctx, next) => {
