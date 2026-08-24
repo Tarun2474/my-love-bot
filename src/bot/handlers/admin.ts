@@ -73,10 +73,11 @@ export const handleBroadcastCommand = async (ctx: Context) => {
   if (userId !== ADMIN_ID) return;
 
   const messageText = (ctx.message as any)?.text || '';
-  const broadcastMsg = messageText.split(' ').slice(1).join(' ').trim();
+  // Yeh multi-line aur badhe messages ko bhi bina kisi dikkat ke nikal lega
+  const broadcastMsg = messageText.replace(/^\/broadcast\s*/, '').trim();
 
   if (!broadcastMsg) {
-    return ctx.reply('⚠️ Please provide a message to broadcast. Example:\n`/broadcast Hello everyone, new update is live!`', { parse_mode: 'Markdown' });
+    return ctx.reply('⚠️ Please provide a message to broadcast after /broadcast command.');
   }
 
   const users = await User.find({ status: { $ne: 'DELETED' } });
@@ -88,7 +89,7 @@ export const handleBroadcastCommand = async (ctx: Context) => {
     try {
       await ctx.telegram.sendMessage(
         Number(user.telegramUserId),
-        `📢 **ADMIN ANNOUNCEMENT**\n\n${broadcastMsg}`,
+        broadcastMsg, // Tumhara pura format aur emojis ke sath message jayega
         { parse_mode: 'Markdown' }
       );
       successCount++;
