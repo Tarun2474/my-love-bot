@@ -7,7 +7,7 @@ import { handleNewLove, handleFilterCommand, handleFilterCallbacks } from './bot
 import { handleEndChat, handleRatingCallbacks, handleMessageRelay } from './bot/handlers/chat';
 import { handleAnnouncementCommand, handlePrivacyCommand, handleContactCommand, handleCopyrightCommand, handleDeleteAnnouncementCommand } from './bot/handlers/announcement';
 import { handleComplaintStart, handleComplaintCallbacks, handleComplaintText, handleComplaintPhoto } from './bot/handlers/complaintBot';
-import { handleAdminCommand, handleAdminSearch, handleAdminActions } from './bot/handlers/admin';
+import { handleAdminCommand, handleAdminSearch, handleBroadcastCommand, handleWarnCommand, handleAdminActions } from './bot/handlers/admin';
 
 const botToken = process.env.BOT_TOKEN;
 if (!botToken) {
@@ -19,7 +19,7 @@ export const app = express();
 
 app.use(express.json());
 
-// Set Telegram Bot Commands Menu automatically (Admin command is kept hidden)
+// Set Telegram Bot Commands Menu automatically (Admin commands are hidden from public menu)
 bot.telegram.setMyCommands([
   { command: 'start', description: 'Start My Love Bot' },
   { command: 'new', description: 'Find a new random love' },
@@ -49,17 +49,17 @@ bot.command('privacy', handlePrivacyCommand);
 bot.command('contact', handleContactCommand);
 bot.command('deleteaccount', handleDeleteAccount);
 
-
 // Private Admin Commands (Hidden from public menu)
 bot.command('admin', handleAdminCommand);
 bot.command('search', handleAdminSearch);
 bot.command('broadcast', handleBroadcastCommand);
+bot.command('warn', handleWarnCommand);
 
 // Text & Form Handlers Middleware
 bot.on('text', async (ctx, next) => {
   const userId = ctx.from?.id.toString();
   
-  // Blocked user check (Blocked users can only use /complaint or /start for appeal)
+  // Blocked user check (Blocked users can only use /complaint or /start for appeals)
   if (userId) {
     const user = await User.findOne({ telegramUserId: userId });
     if (user && user.isBlocked) {
@@ -111,7 +111,7 @@ bot.action(/^(del_)/, handleDeleteCallbacks);
 bot.action(/^(filt_)/, handleFilterCallbacks);
 bot.action(/^(btn_start_complaint|proof_upload|proof_none|submit_complaint)$/, handleComplaintCallbacks);
 
-// Admin Action Buttons (Block / Unblock callbacks)
+// Admin Action Buttons (Block / Unblock / CSV / Lists callbacks)
 bot.action(/^adm_/, handleAdminActions);
 
 bot.action(/^(rate_|btn_new_love)/, async (ctx) => {
