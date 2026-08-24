@@ -13,7 +13,8 @@ export interface IUser extends Document {
   dislikes: number;
   level: number;
   totalChatSeconds: number;
-  isBlocked: boolean; // <-- Interface mein yahan add kar diya hai
+  isBlocked: boolean;
+  warnings: number; // Tracks the warning count for the user
   status: 'NEW' | 'REGISTERING' | 'ACTIVE' | 'SEARCHING' | 'CHATTING' | 'RATING' | 'INACTIVE' | 'DELETED';
   isSearching: boolean;
   partnerId?: number;
@@ -37,6 +38,7 @@ const UserSchema = new Schema<IUser>({
   level: { type: Number, default: 1 },
   totalChatSeconds: { type: Number, default: 0 },
   isBlocked: { type: Boolean, default: false },
+  warnings: { type: Number, default: 0 }, // Initial warnings set to 0
   status: { type: String, enum: ['NEW', 'REGISTERING', 'ACTIVE', 'SEARCHING', 'CHATTING', 'RATING', 'INACTIVE', 'DELETED'], default: 'NEW', index: true },
   isSearching: { type: Boolean, default: false, index: true },
   partnerId: { type: Number },
