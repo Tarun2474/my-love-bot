@@ -8,7 +8,8 @@ export const handleAdminCommand = async (ctx: Context) => {
   const userId = ctx.from?.id.toString();
   if (userId !== ADMIN_ID) return; // Hidden from all regular users
 
-  const totalUsers = await User.countDocuments();
+  // Total registered users (excluding those who permanently deleted their accounts)
+  const totalUsers = await User.countDocuments({ status: { $ne: 'DELETED' } });
   const activeUsers = await User.countDocuments({ status: 'ACTIVE' });
   const blockedUsers = await User.countDocuments({ isBlocked: true });
 
@@ -43,9 +44,11 @@ export const handleAdminSearch = async (ctx: Context) => {
     return ctx.reply('⚠️ Please provide a MyLove ID. Example: `/search MLB2026001`', { parse_mode: 'Markdown' });
   }
 
-  const targetUser = await User.findOne({ myLoveId: args });
+  // Sirf unko search karega jinka account DELETED nahi hai
+  const targetUser = await User.findOne({ myLoveId: args, status: { $ne: 'DELETED' } });
+  
   if (!targetUser) {
-    return ctx.reply(`❌ No user found with MyLove ID: \`${args}\``, { parse_mode: 'Markdown' });
+    return ctx.reply(`❌ No user found with MyLove ID: \`${args}\`.\n*(Note: They might have permanently deleted their account or the ID is incorrect)*`, { parse_mode: 'Markdown' });
   }
 
   const statusText = targetUser.isBlocked ? '🔴 BLOCKED' : '🟢 ACTIVE';
@@ -73,13 +76,13 @@ export const handleBroadcastCommand = async (ctx: Context) => {
   if (userId !== ADMIN_ID) return;
 
   const messageText = (ctx.message as any)?.text || '';
-  // Yeh multi-line aur badhe messages ko bhi bina kisi dikkat ke nikal lega
   const broadcastMsg = messageText.replace(/^\/broadcast\s*/, '').trim();
 
   if (!broadcastMsg) {
-    return ctx.reply('⚠️ Please provide a message to broadcast after /broadcast command.');
+    return ctx.reply('⚠️ Please provide a message to broadcast. Example:\n`/broadcast Hello everyone, new update is live!`', { parse_mode: 'Markdown' });
   }
 
+  // Broadcast will only go to users who haven't deleted their accounts
   const users = await User.find({ status: { $ne: 'DELETED' } });
   let successCount = 0;
 
@@ -89,7 +92,7 @@ export const handleBroadcastCommand = async (ctx: Context) => {
     try {
       await ctx.telegram.sendMessage(
         Number(user.telegramUserId),
-        broadcastMsg, // Tumhara pura format aur emojis ke sath message jayega
+        broadcastMsg,
         { parse_mode: 'Markdown' }
       );
       successCount++;
@@ -99,7 +102,7 @@ export const handleBroadcastCommand = async (ctx: Context) => {
   return ctx.reply(`✅ Broadcast completed successfully!\nDelivered to: ${successCount} users.`);
 };
 
-// 4. Warning System Command (/warn <MyLoveID>) - Automatically blocks after 5 warnings
+// 4. Warning System Command (/warn <MyLoveID>)
 export const handleWarnCommand = async (ctx: Context) => {
   const userId = ctx.from?.id.toString();
   if (userId !== ADMIN_ID) return;
@@ -111,9 +114,9 @@ export const handleWarnCommand = async (ctx: Context) => {
     return ctx.reply('⚠️ Please provide a MyLove ID to warn. Example: `/warn MLB2026001`', { parse_mode: 'Markdown' });
   }
 
-  const targetUser = await User.findOne({ myLoveId });
+  const targetUser = await User.findOne({ myLoveId, status: { $ne: 'DELETED' } });
   if (!targetUser) {
-    return ctx.reply(`❌ No user found with MyLove ID: \`${myLoveId}\``, { parse_mode: 'Markdown' });
+    return ctx.reply(`❌ No active user found with MyLove ID: \`${myLoveId}\``, { parse_mode: 'Markdown' });
   }
 
   targetUser.warnings = (targetUser.warnings || 0) + 1;
@@ -153,13 +156,13 @@ export const handleAdminActions = async (ctx: Context) => {
 
   const cbData = (ctx.callbackQuery as any)?.data || '';
 
-  // Show Blocked List with Inline Unblock Buttons
+  // Show Blocked List
   if (cbData === 'adm_show_blocked') {
     await ctx.answerCbQuery();
-    const blockedUsers = await User.find({ isBlocked: true });
+    const blockedUsers = await User.find({ isBlocked: true, status: { $ne: 'DELETED' } });
 
     if (blockedUsers.length === 0) {
-      return ctx.reply('🟢 There are currently no blocked users in the database.');
+      return ctx.reply('🟢 There are currently no blocked active users in the database.');
     }
 
     let text = `🔴 **BLOCKED USERS LIST (${blockedUsers.length}):**\n\n`;
@@ -176,11 +179,16 @@ export const handleAdminActions = async (ctx: Context) => {
   // Export Users CSV Report
   if (cbData === 'adm_export_csv') {
     await ctx.answerCbQuery('Generating CSV report...');
+    
+    // Yahan saare users fetch honge (including DELETED ones)
     const users = await User.find({});
     
     let csvContent = 'MyLoveID,TelegramID,Name,Age,Gender,Status,Warnings,JoinedDate\n';
     for (const u of users) {
-      csvContent += `${u.myLoveId},${u.telegramUserId},"${u.name || ''}",${u.age || ''},${u.gender || ''},${u.isBlocked ? 'BLOCKED' : u.status},${u.warnings || 0},${u.createdAt}\n`;
+      // Agar account deleted hai, toh CSV mein strict 'DELETED' dikhayega
+      const displayStatus = u.status === 'DELETED' ? 'DELETED' : (u.isBlocked ? 'BLOCKED' : u.status);
+      
+      csvContent += `${u.myLoveId},${u.telegramUserId},"${u.name || ''}",${u.age || ''},${u.gender || ''},${displayStatus},${u.warnings || 0},${u.createdAt}\n`;
     }
 
     const buffer = Buffer.from(csvContent, 'utf-8');
@@ -197,14 +205,6 @@ export const handleAdminActions = async (ctx: Context) => {
     
     await ctx.answerCbQuery('User has been blocked successfully!');
     await ctx.editMessageText(`🔴 **User with Telegram ID (${targetId}) is now BLOCKED.**`, { parse_mode: 'Markdown' });
-
-    try {
-      await ctx.telegram.sendMessage(
-        Number(targetId),
-        `🚫 **You have been blocked from using this bot.**\n\nIf you think this was a mistake, you can submit an appeal using the /complaint command.`,
-        { parse_mode: 'Markdown' }
-      );
-    } catch (e) {}
   } 
 
   // Unblock User via Inline Button
@@ -214,13 +214,5 @@ export const handleAdminActions = async (ctx: Context) => {
 
     await ctx.answerCbQuery('User has been unblocked!');
     await ctx.editMessageText(`🟢 **User with Telegram ID (${targetId}) has been UNBLOCKED and warnings reset.**`, { parse_mode: 'Markdown' });
-
-    try {
-      await ctx.telegram.sendMessage(
-        Number(targetId),
-        `✅ **Good News! Your account has been unblocked by the administration.** You can now use the bot normally.`,
-        { parse_mode: 'Markdown' }
-      );
-    } catch (e) {}
   }
 };
